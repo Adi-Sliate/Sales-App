@@ -12,7 +12,7 @@ app = FastAPI(title="Sales Summary Report API")
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # Replace with your Back4App URL in production
+    allow_origins=["https://salesapp-7e0qkiur.b4a.run/"],   # Replace with your Back4App URL in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
