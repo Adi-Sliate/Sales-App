@@ -1,0 +1,363 @@
+:root {
+    --primary-color: #1a4480;
+    --accent-color: #ff6b00;
+    --light-bg: #f5f7fa;
+    --border-soft: #dbe4f0;
+  }
+  
+  body {
+    background: var(--light-bg);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+  }
+  
+  .app-header {
+    background: linear-gradient(to right, var(--primary-color), #2c5aa0);
+    color: #fff;
+    border-bottom: 4px solid var(--accent-color);
+  }
+  
+  .summary-card {
+    border-left: 4px solid var(--accent-color);
+  }
+  
+  .card {
+    border-radius: 12px;
+  }
+  
+  .card-header {
+    border-bottom: 1px solid var(--border-soft);
+  }
+  
+  .form-control,
+  .form-select {
+    border-radius: 8px;
+  }
+  
+  .form-control:focus,
+  .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(26, 68, 128, 0.12);
+  }
+  
+  .btn {
+    border-radius: 8px;
+  }
+  
+  .table th,
+  .table td {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  
+  .table thead th {
+    background-color: #f8fafc;
+    font-weight: 600;
+  }
+  
+  .pagination .page-link {
+    cursor: pointer;
+  }
+  
+  #pageInfo,
+  #currentPageText {
+    font-weight: 500;
+  }
+  
+  .page-size-select {
+    width: 100px;
+  }
+  
+  .empty-row td {
+    text-align: center;
+    color: #6c757d;
+    padding: 24px 12px;
+  }
+  
+  /* tablet */
+  @media (max-width: 991.98px) {
+    .app-header .container {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 8px;
+    }
+  }
+  
+  /* mobile */
+  @media (max-width: 767.98px) {
+    body {
+      font-size: 14px;
+    }
+  
+    .container {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+  
+    .app-header {
+      padding-top: 12px !important;
+      padding-bottom: 12px !important;
+    }
+  
+    .app-header h1 {
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+  
+    .card-header h2,
+    .card-header .h5 {
+      font-size: 1rem;
+    }
+  
+    .summary-card .fs-3 {
+      font-size: 1.4rem !important;
+    }
+  
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  
+    #pageInfo,
+    #currentPageText {
+      font-size: 0.85rem;
+      text-align: center;
+      width: 100%;
+    }
+  
+    #pagination {
+      justify-content: center !important;
+      gap: 4px;
+    }
+  
+    .page-size-select {
+      width: 100% !important;
+    }
+  }
+  
+  /* extra small */
+  @media (max-width: 575.98px) {
+    .card-body {
+      padding: 14px;
+    }
+  
+    .form-label {
+      font-size: 0.9rem;
+    }
+  
+    .form-control,
+    .form-select {
+      font-size: 0.95rem;
+      padding: 10px 12px;
+    }
+  
+    .table {
+      font-size: 0.82rem;
+    }
+  
+    .badge {
+      font-size: 0.72rem;
+    }
+  }
+  
+  @media print {
+    .btn,
+    #pagination,
+    #pageSize,
+    #pageInfo,
+    #currentPageText,
+    .app-header {
+      display: none !important;
+    }
+  
+    body {
+      background: #fff;
+    }
+  
+    .card {
+      box-shadow: none !important;
+      border: 1px solid #ddd !important;
+    }
+  
+    .table th,
+    .table td {
+      white-space: normal;
+    }
+  }
+
+  
+  /* Modern Button Container */
+  .modern-button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: var(--light-bg);
+      padding: 20px;
+      border-radius: 24px;
+      border: 1px solid var(--border-soft);
+      backdrop-filter: blur(10px);
+  }
+  
+  /* Modern Button Styles */
+  .btn-modern {
+      position: relative;
+      padding: 10px 24px;
+      font-weight: 500;
+      font-size: 14px;
+      border-radius: 12px;
+      border: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      z-index: 1;
+      letter-spacing: 0.3px;
+      backdrop-filter: blur(4px);
+  }
+  
+  /* Primary Button */
+  .btn-modern-primary {
+      background: linear-gradient(135deg, var(--primary-color) 0%, #2a5a9a 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba(26, 68, 128, 0.2);
+  }
+  
+  .btn-modern-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(26, 68, 128, 0.3);
+      background: linear-gradient(135deg, #1a4480 0%, #2a5a9a 100%);
+  }
+  
+  /* Accent Button */
+  .btn-modern-accent {
+      background: linear-gradient(135deg, var(--accent-color) 0%, #ff8533 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba(255, 107, 0, 0.2);
+  }
+  
+  .btn-modern-accent:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 107, 0, 0.3);
+      background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  }
+  
+  /* Dark Button */
+  .btn-modern-dark {
+      background: linear-gradient(135deg, #2c3e50 0%, #3e5a6f 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba(44, 62, 80, 0.2);
+  }
+  
+  .btn-modern-dark:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(44, 62, 80, 0.3);
+  }
+  
+  /* Secondary/Print Button */
+  .btn-modern-secondary {
+      background: linear-gradient(135deg, #6c757d 0%, #7e8892 100%);
+      color: white;
+      box-shadow: 0 2px 6px rgba(108, 117, 125, 0.2);
+  }
+  
+  .btn-modern-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
+  }
+  
+  /* Active/Pressed State */
+  .btn-modern:active {
+      transform: translateY(1px);
+  }
+  
+  /* Ripple Effect */
+  .btn-modern::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+      z-index: -1;
+  }
+  
+  .btn-modern:active::after {
+      width: 300px;
+      height: 300px;
+  }
+  
+  /* Icon Styles */
+  .btn-modern i {
+      margin-right: 8px;
+      font-size: 1.1em;
+      transition: transform 0.2s ease;
+  }
+  
+  .btn-modern:hover i {
+      transform: scale(1.1);
+  }
+  
+
+ /* Mobile View - Grid Layout */
+@media (max-width: 768px) {
+  .modern-button-group {
+      padding: 16px;
+  }
+
+  .mobile-grid {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      width: 100%;
+  }
+
+  .btn-modern {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      white-space: nowrap;
+  }
+
+  .btn-modern i {
+      margin-right: 6px;
+      font-size: 1em;
+      flex-shrink: 0;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .mobile-grid {
+      grid-template-columns: 1fr;
+  }
+
+  .btn-modern {
+      font-size: 14px;
+      min-height: 50px;
+  }
+}
+
+/* Base button styles */
+.btn-modern {
+  position: relative;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+/* Focus state */
+.btn-modern:focus,
+.btn-modern:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
