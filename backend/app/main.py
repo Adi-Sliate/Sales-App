@@ -2,16 +2,20 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
-from .routers import reports
-from .database import engine, Base, get_db
+from fastapi.responses import HTMLResponse
 from pathlib import Path
 import logging
 import os
 
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Import database and routers
+from .database import engine, Base, get_db
+from .routers import reports
+
+# Create FastAPI app
 app = FastAPI(title="Sales Report API", version="1.0.0")
 
 # Create tables on startup
@@ -24,7 +28,7 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Database initialization error: {e}")
 
-# CORS
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -38,7 +42,9 @@ app.include_router(reports.router)
 
 # Get frontend path
 frontend_path = Path(__file__).parent.parent.parent / "frontend"
+logger.info(f"Frontend path: {frontend_path}")
 
+# Serve static files
 if frontend_path.exists():
     # Mount CSS directory
     css_path = frontend_path / "css"
@@ -57,14 +63,15 @@ async def root():
     """Serve the main HTML page"""
     index_path = frontend_path / "index.html"
     if index_path.exists():
-        with open(index_path, "r") as f:
+        with open(index_path, "r", encoding="utf-8") as f:
             content = f.read()
         return HTMLResponse(content=content)
     return {"message": "Sales Report API is running"}
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "service": "Sales Report API"}
+    """Health check endpoint"""
+    return {"status": "healthy", "service": "Sales Report API", "version": "1.0.0"}
 
 @app.get("/api/test-db")
 async def test_db(db: Session = Depends(get_db)):
@@ -75,9 +82,11 @@ async def test_db(db: Session = Depends(get_db)):
         return {
             "status": "connected",
             "message": "Database connection successful",
-            "sample_data": result is not None
+            "sample_data": result is not None,
+            "has_data": result is not None
         }
     except Exception as e:
+        logger.error(f"Database test error: {e}")
         return {
             "status": "error",
             "message": str(e)
@@ -85,3 +94,18 @@ async def test_db(db: Session = Depends(get_db)):
 
 # Import Session for test endpoint
 from sqlalchemy.orm import Session
+
+# Root route for API
+@app.get("/api")
+async def api_root():
+    return {
+        "message": "Sales Report API",
+        "endpoints": [
+            "/api/health",
+            "/api/test-db",
+            "/api/reports/sales",
+            "/api/reports/sales/summary",
+            "/api/reports/items",
+            "/api/reports/stock/value"
+        ]
+    }
