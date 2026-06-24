@@ -11,7 +11,8 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
     # Fallback for local development with PostgreSQL
-    DATABASE_URL = "postgresql://postgres:password@localhost:5432/sales_db"
+    DATABASE_URL = "postgresql://netlifydb_owner:npg_NcpZSY34drLX@ep-old-rain-ajgdncwm.c-3.us-east-2.db.netlify.com/netlifydb?sslmode=requireb"
+   
     print("⚠️  DATABASE_URL not set, using default local PostgreSQL connection")
 
 # Create engine for PostgreSQL
