@@ -3,17 +3,19 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
+import logging
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-# Get database URL from environment variable
+# Get database URL from environment variable ONLY
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    # Fallback for local development with PostgreSQL
-    DATABASE_URL = "postgresql://neondb_owner:npg_RfQg1HYZew5d@ep-mute-water-ao6w43dt.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-   
-    print("⚠️  DATABASE_URL not set, using default local PostgreSQL connection")
+    # Use SQLite for local testing if no DATABASE_URL
+    logger.warning("⚠️ DATABASE_URL not set, using SQLite for testing")
+    DATABASE_URL = "sqlite:///./test.db"
 
 # Create engine for PostgreSQL
 engine = create_engine(
