@@ -1,21 +1,16 @@
 # backend/app/main.py
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from .routers import reports
+from .database import engine, Base
 from pathlib import Path
 import logging
-import os
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Import database and routers
-from .database import engine, Base, get_db
-from .routers import reports
-
-# Create FastAPI app
 app = FastAPI(title="Sales Report API", version="1.0.0")
 
 # Create tables on startup
@@ -28,7 +23,7 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Database initialization error: {e}")
 
-# CORS middleware
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -40,72 +35,36 @@ app.add_middleware(
 # Include routers
 app.include_router(reports.router)
 
-# Get frontend path
+# Serve frontend
 frontend_path = Path(__file__).parent.parent.parent / "frontend"
-logger.info(f"Frontend path: {frontend_path}")
-
-# Serve static files
 if frontend_path.exists():
-    # Mount CSS directory
-    css_path = frontend_path / "css"
-    if css_path.exists():
-        app.mount("/css", StaticFiles(directory=str(css_path)), name="css")
-        logger.info(f"Serving CSS from: {css_path}")
-    
-    # Mount JS directory
-    js_path = frontend_path / "js"
-    if js_path.exists():
-        app.mount("/js", StaticFiles(directory=str(js_path)), name="js")
-        logger.info(f"Serving JS from: {js_path}")
+    app.mount("/static", StaticFiles(directory=str(frontend_path)), name="static")
 
 @app.get("/")
 async def root():
-    """Serve the main HTML page"""
     index_path = frontend_path / "index.html"
     if index_path.exists():
-        with open(index_path, "r", encoding="utf-8") as f:
-            content = f.read()
-        return HTMLResponse(content=content)
+        with open(index_path, "r") as f:
+            return HTMLResponse(content=f.read())
     return {"message": "Sales Report API is running"}
 
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "Sales Report API", "version": "1.0.0"}
+    return {"status": "healthy", "service": "Sales Report API"}
 
 @app.get("/api/test-db")
 async def test_db(db: Session = Depends(get_db)):
     """Test database connection"""
     try:
-        from .models import TransactionMain
+        # Try to query one record
         result = db.query(TransactionMain).first()
         return {
             "status": "connected",
             "message": "Database connection successful",
-            "sample_data": result is not None,
-            "has_data": result is not None
+            "sample_data": result is not None
         }
     except Exception as e:
-        logger.error(f"Database test error: {e}")
         return {
             "status": "error",
             "message": str(e)
         }
-
-# Import Session for test endpoint
-from sqlalchemy.orm import Session
-
-# Root route for API
-@app.get("/api")
-async def api_root():
-    return {
-        "message": "Sales Report API",
-        "endpoints": [
-            "/api/health",
-            "/api/test-db",
-            "/api/reports/sales",
-            "/api/reports/sales/summary",
-            "/api/reports/items",
-            "/api/reports/stock/value"
-        ]
-    }
