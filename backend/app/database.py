@@ -6,19 +6,31 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 load_dotenv()
 
-DB_SERVER = os.getenv("DB_SERVER")
-DB_NAME = os.getenv("DB_NAME")
-DB_DRIVER = os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server")
-DB_TRUSTED_CONNECTION = os.getenv("DB_TRUSTED_CONNECTION", "yes")
+# Get database URL from environment variable
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-connection_string = (
-    f"mssql+pyodbc://@{DB_SERVER}/{DB_NAME}"
-    f"?driver={DB_DRIVER.replace(' ', '+')}"
-    f"&trusted_connection={DB_TRUSTED_CONNECTION}"
+if not DATABASE_URL:
+    # Fallback for local development with PostgreSQL
+    DATABASE_URL = "postgresql://postgres:password@localhost:5432/sales_db"
+    print("⚠️  DATABASE_URL not set, using default local PostgreSQL connection")
+
+# Create engine for PostgreSQL
+engine = create_engine(
+    DATABASE_URL,
+    echo=False,
+    future=True,
+    pool_size=5,
+    max_overflow=10,
+    pool_pre_ping=True,
+    pool_recycle=3600
 )
 
-engine = create_engine(connection_string, echo=False, future=True)
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
+SessionLocal = sessionmaker(
+    bind=engine, 
+    autoflush=False, 
+    autocommit=False, 
+    future=True
+)
 
 class Base(DeclarativeBase):
     pass
