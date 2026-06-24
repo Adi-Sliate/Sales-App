@@ -11,7 +11,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
     # Fallback for local development with PostgreSQL
-    DATABASE_URL = "postgresql://netlifydb_owner:npg_NcpZSY34drLX@ep-old-rain-ajgdncwm.c-3.us-east-2.db.netlify.com/netlifydb?sslmode=requireb"
+    DATABASE_URL = "postgresql://test1_owner:npg_ERZgbWpmhj68@ep-purple-credit-a1p1imhv-pooler.ap-southeast-1.aws.neon.tech/test1?sslmode=require&channel_binding=require"
    
     print("⚠️  DATABASE_URL not set, using default local PostgreSQL connection")
 
