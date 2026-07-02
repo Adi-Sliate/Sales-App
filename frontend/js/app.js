@@ -1,4 +1,5 @@
-const API_BASE = "http://127.0.0.1:8000/reports";
+
+const API_BASE_URL = 'https://salesapp-zt3ru16n.b4a.run';
 
 let currentData = [];
 let currentPage = 1;
