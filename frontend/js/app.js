@@ -1,3 +1,6 @@
+// ============================================
+// API Configuration - FIXED for Production
+// ============================================
 
 const API_BASE_URL = 'https://salesapp-zt3ru16n.b4a.run';
 
@@ -477,7 +480,7 @@ async function loadSalesSummary() {
             terminal_id: filters.terminal_id
         });
 
-        const response = await fetch(`${API_BASE}/sales-summary?${query}`);
+        const response = await fetch(`${API_BASE_URL}/sales-summary?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -519,7 +522,7 @@ async function loadItemSummary() {
             created_user: filters.created_user
         });
 
-        const response = await fetch(`${API_BASE}/item-summary?${query}`);
+        const response = await fetch(`${API_BASE_URL}/item-summary?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -561,7 +564,7 @@ async function loadQuantityReport() {
             created_user: filters.created_user
         });
 
-        const response = await fetch(`${API_BASE}/quantity-report?${query}`);
+        const response = await fetch(`${API_BASE_URL}/quantity-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -603,7 +606,7 @@ async function loadBillReport() {
             bill_no: filters.bill_no
         });
 
-        const response = await fetch(`${API_BASE}/bill-report?${query}`);
+        const response = await fetch(`${API_BASE_URL}/bill-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -645,7 +648,7 @@ async function loadGpReport() {
             created_user: filters.created_user
         });
 
-        const response = await fetch(`${API_BASE}/gp-report?${query}`);
+        const response = await fetch(`${API_BASE_URL}/gp-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -678,7 +681,7 @@ async function loadStockReport() {
             item_name: filters.item_name
         });
 
-        const response = await fetch(`${API_BASE}/stock-report?${query}`);
+        const response = await fetch(`${API_BASE_URL}/stock-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -720,7 +723,7 @@ async function loadExpensesReport() {
             comments: filters.comments
         });
 
-        const response = await fetch(`${API_BASE}/expenses-report?${query}`);
+        const response = await fetch(`${API_BASE_URL}/expenses-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -1072,45 +1075,6 @@ function formatPrintDateTime(value) {
     const d = value ? new Date(value) : new Date();
     if (isNaN(d.getTime())) return "";
     return d.toLocaleString();
-}
-
-function escapeHtml(value) {
-    return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-function getReportDisplayName() {
-    switch (currentReportType) {
-        case "sales": return "SALES SUMMARY REPORT";
-        case "item": return "ITEM SUMMARY REPORT";
-        case "quantity": return "QUANTITY REPORT";
-        case "bill": return "BILL REPORT";
-        case "gp": return "GP REPORT";
-        case "stock": return "STOCK REPORT";
-        case "expenses": return "EXPENSES REPORT";
-        default: return "REPORT";
-    }
-}
-
-function getPrintFiltersText() {
-    const filters = getFilters();
-    const parts = [];
-
-    if (filters.date_from || filters.date_to) {
-        parts.push(`From : ${filters.date_from || "-"} To : ${filters.date_to || "-"}`);
-    }
-    if (filters.trans_type) parts.push(`Trans Type : ${filters.trans_type}`);
-    if (filters.created_user) parts.push(`User : ${filters.created_user}`);
-    if (filters.terminal_id) parts.push(`Terminal : ${filters.terminal_id}`);
-    if (filters.item_code) parts.push(`Item Code : ${filters.item_code}`);
-    if (filters.item_name) parts.push(`Item Name : ${filters.item_name}`);
-    if (filters.bill_no) parts.push(`Bill No : ${filters.bill_no}`);
-
-    return parts;
 }
 
 function buildPrintTableHTML(rows) {
