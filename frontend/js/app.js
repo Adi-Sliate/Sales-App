@@ -10,6 +10,58 @@ let currentPage = 1;
 let pageSize = 25;
 let currentReportType = "";
 
+// ================= DATE RANGE FUNCTIONS =================
+const DATE_RANGES = {
+    alldata: { from: '2026-02-09', to: '2026-05-07', label: 'All Data' },
+    today: { 
+        get from() { return new Date().toISOString().split('T')[0]; }, 
+        get to() { return new Date().toISOString().split('T')[0]; }, 
+        label: 'Today' 
+    },
+    week: { 
+        get from() { const d = new Date(); d.setDate(d.getDate() - 7); return d.toISOString().split('T')[0]; }, 
+        get to() { return new Date().toISOString().split('T')[0]; }, 
+        label: 'Last 7 Days' 
+    },
+    month: { 
+        get from() { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().split('T')[0]; }, 
+        get to() { return new Date().toISOString().split('T')[0]; }, 
+        label: 'Last 30 Days' 
+    },
+    quarter: { 
+        get from() { const d = new Date(); d.setMonth(d.getMonth() - 3); return d.toISOString().split('T')[0]; }, 
+        get to() { return new Date().toISOString().split('T')[0]; }, 
+        label: 'Last 3 Months' 
+    },
+    year: { 
+        get from() { const d = new Date(); d.setFullYear(d.getFullYear() - 1); return d.toISOString().split('T')[0]; }, 
+        get to() { return new Date().toISOString().split('T')[0]; }, 
+        label: 'Last Year' 
+    }
+};
+
+function getDateRange(preset = 'alldata') {
+    const range = DATE_RANGES[preset] || DATE_RANGES.alldata;
+    return {
+        from: typeof range.from === 'function' ? range.from() : range.from,
+        to: typeof range.to === 'function' ? range.to() : range.to
+    };
+}
+
+function applyDatePreset() {
+    const preset = document.getElementById('datePreset');
+    if (!preset) return;
+    
+    const range = getDateRange(preset.value);
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    
+    if (dateFrom) dateFrom.value = range.from;
+    if (dateTo) dateTo.value = range.to;
+    
+    console.log(`📅 Date range updated: ${range.from} to ${range.to}`);
+}
+
 // ================= FORMATTERS =================
 function formatMoney(value) {
     const num = Number(value || 0);
@@ -35,9 +87,26 @@ function formatUnits(value) {
 
 // ================= FILTERS =================
 function getFilters() {
+    const dateFromEl = document.getElementById("dateFrom");
+    const dateToEl = document.getElementById("dateTo");
+    
+    // If date inputs exist and have values, use them
+    // Otherwise use default preset
+    let from = dateFromEl?.value || '';
+    let to = dateToEl?.value || '';
+    
+    // If no dates are set, use the default range
+    if (!from || !to) {
+        const defaultRange = getDateRange('alldata');
+        from = defaultRange.from;
+        to = defaultRange.to;
+        if (dateFromEl) dateFromEl.value = from;
+        if (dateToEl) dateToEl.value = to;
+    }
+    
     return {
-        date_from: document.getElementById("dateFrom")?.value || "",
-        date_to: document.getElementById("dateTo")?.value || "",
+        date_from: from,
+        date_to: to,
         trans_type: document.getElementById("transType")?.value.trim() || "",
         created_user: document.getElementById("createdUser")?.value.trim() || "",
         terminal_id: document.getElementById("terminalId")?.value.trim() || "",
@@ -481,6 +550,8 @@ async function loadSalesSummary() {
             terminal_id: filters.terminal_id
         });
 
+        console.log(`📡 Fetching sales summary: ${API_BASE}/sales-summary?${query}`);
+
         const response = await fetch(`${API_BASE}/sales-summary?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
@@ -522,6 +593,8 @@ async function loadItemSummary() {
             trans_type: filters.trans_type,
             created_user: filters.created_user
         });
+
+        console.log(`📡 Fetching item summary: ${API_BASE}/item-summary?${query}`);
 
         const response = await fetch(`${API_BASE}/item-summary?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -565,6 +638,8 @@ async function loadQuantityReport() {
             created_user: filters.created_user
         });
 
+        console.log(`📡 Fetching quantity report: ${API_BASE}/quantity-report?${query}`);
+
         const response = await fetch(`${API_BASE}/quantity-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
@@ -606,6 +681,8 @@ async function loadBillReport() {
             terminal_id: filters.terminal_id,
             bill_no: filters.bill_no
         });
+
+        console.log(`📡 Fetching bill report: ${API_BASE}/bill-report?${query}`);
 
         const response = await fetch(`${API_BASE}/bill-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -649,6 +726,8 @@ async function loadGpReport() {
             created_user: filters.created_user
         });
 
+        console.log(`📡 Fetching GP report: ${API_BASE}/gp-report?${query}`);
+
         const response = await fetch(`${API_BASE}/gp-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
@@ -681,6 +760,8 @@ async function loadStockReport() {
             item_code: filters.item_code,
             item_name: filters.item_name
         });
+
+        console.log(`📡 Fetching stock report: ${API_BASE}/stock-report?${query}`);
 
         const response = await fetch(`${API_BASE}/stock-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -723,6 +804,8 @@ async function loadExpensesReport() {
             user: filters.created_user,
             comments: filters.comments
         });
+
+        console.log(`📡 Fetching expenses report: ${API_BASE}/expenses-report?${query}`);
 
         const response = await fetch(`${API_BASE}/expenses-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -791,7 +874,28 @@ if (pageSizeEl) {
     });
 }
 
-//  =================== PRINT SECTION ===========
+// ================= INITIALIZATION =================
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default date range
+    const defaultRange = getDateRange('alldata');
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    
+    if (dateFrom) dateFrom.value = defaultRange.from;
+    if (dateTo) dateTo.value = defaultRange.to;
+    
+    // If date preset dropdown exists, set it
+    const preset = document.getElementById('datePreset');
+    if (preset) {
+        preset.value = 'alldata';
+        preset.addEventListener('change', applyDatePreset);
+    }
+    
+    console.log(`📅 Default date range set: ${defaultRange.from} to ${defaultRange.to}`);
+    console.log(`🔗 API Base URL: ${API_BASE}`);
+});
+
+// ================= PRINT SECTION ===========
 function formatPrintDate(dateValue) {
     if (!dateValue) return "";
     const d = new Date(dateValue);
@@ -1100,6 +1204,12 @@ function buildPrintSummaryHTML() {
         <div class="summary-line"><strong>${escapeHtml(amountLabel)}:</strong> ${escapeHtml(amount)}</div>
         <div class="summary-line"><strong>${escapeHtml(extraLabel)}:</strong> ${escapeHtml(extra)}</div>
     `;
+}
+
+function formatPrintDateTime(value) {
+    const d = value ? new Date(value) : new Date();
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleString();
 }
 
 function printCurrentReport() {
