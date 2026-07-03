@@ -3,7 +3,7 @@
 // ============================================
 
 // BACKEND URL with /api prefix
-const API_BASE_URL = 'https://salesapp-bsc7be9t.b4a.run/api';
+const API_BASE_URL = 'https://salesapp-9hjafypv.b4a.run/';
 
 // ================= LOADERS =================
 
