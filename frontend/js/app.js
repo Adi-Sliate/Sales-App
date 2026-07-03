@@ -2,7 +2,7 @@
 // API Configuration - FIXED for Production
 // ============================================
 
-const API_BASE_URL = 'https://salesapp-zt3ru16n.b4a.run';
+const API_BASE_URL = 'https://salesapp-bsc7be9t.b4a.run/api';
 
 let currentData = [];
 let currentPage = 1;
