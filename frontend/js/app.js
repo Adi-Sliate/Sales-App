@@ -3,7 +3,7 @@
 // ============================================
 
 // ✅ CORRECT: Use your deployed backend URL
-const API_BASE = "https://salesapp-gdswkj9b.b4a.run/api/reports";
+const API_BASE = "https://salesapp-od4qsbwe.b4a.run/api/reports";
 
 let currentData = [];
 let currentPage = 1;
