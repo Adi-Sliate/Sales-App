@@ -36,8 +36,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(reports.router)
+# Include routers with /api prefix
+app.include_router(reports.router, prefix="/api")
 
 # Serve frontend
 frontend_path = Path(__file__).parent.parent.parent / "frontend"
