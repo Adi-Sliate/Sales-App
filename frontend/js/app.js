@@ -32,7 +32,7 @@ function getFilters() {
     return {
         date_from: document.getElementById("dateFrom")?.value || "",
         date_to: document.getElementById("dateTo")?.value || "",
-        trans_type: document.getElementById("transType")?.value.trim() || "",
+        trans_type: document.getElementById("transType")?.value.trim().toUpperCase() || "",
         created_user: document.getElementById("createdUser")?.value.trim() || "",
         terminal_id: document.getElementById("terminalId")?.value.trim() || "",
         item_code: document.getElementById("itemCode")?.value.trim() || "",
@@ -475,7 +475,7 @@ async function loadSalesSummary() {
             terminal_id: filters.terminal_id
         });
 
-        const response = await fetch(`${API_BASE}/sales-summary?${query}`);
+        const response = await fetch(`${API_BASE}/reports/sales-summary?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -517,7 +517,7 @@ async function loadItemSummary() {
             created_user: filters.created_user
         });
 
-        const response = await fetch(`${API_BASE}/item-summary?${query}`);
+        const response = await fetch(`${API_BASE}/reports/item-summary?${query}`);  
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -559,7 +559,7 @@ async function loadQuantityReport() {
             created_user: filters.created_user
         });
 
-        const response = await fetch(`${API_BASE}/quantity-report?${query}`);
+        const response = await fetch(`${API_BASE}/reports/quantity-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -601,7 +601,7 @@ async function loadBillReport() {
             bill_no: filters.bill_no
         });
 
-        const response = await fetch(`${API_BASE}/bill-report?${query}`);
+        const response = await fetch(`${API_BASE}/reports/bill-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -643,7 +643,7 @@ async function loadGpReport() {
             created_user: filters.created_user
         });
 
-        const response = await fetch(`${API_BASE}/gp-report?${query}`);
+        const response = await fetch(`${API_BASE}/reports/gp-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -676,7 +676,7 @@ async function loadStockReport() {
             item_name: filters.item_name
         });
 
-        const response = await fetch(`${API_BASE}/stock-report?${query}`);
+        const response = await fetch(`${API_BASE}/reports/stock-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
@@ -718,7 +718,7 @@ async function loadExpensesReport() {
             comments: filters.comments
         });
 
-        const response = await fetch(`${API_BASE}/expenses-report?${query}`);
+        const response = await fetch(`${API_BASE}/reports/expenses-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
