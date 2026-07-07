@@ -1,18 +1,23 @@
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from .models import TransactionMain, TransactionSub, StockItems, TmpSummaryStockBalanceCalcWithValue, Accounts, JournalMain, JournalSub
+from .models import TransactionMain, TransactionSub,StockItems, TmpSummaryStockBalanceCalcWithValue,Accounts, JournalMain, JournalSub
+
+
 
 def _line_amount_expr():
+    # Use stored Amount when available, otherwise fallback to Qty * Rate
     return func.coalesce(
         TransactionSub.Amount,
         func.coalesce(TransactionSub.Qty, 0) * func.coalesce(TransactionSub.Rate, 0)
     )
+
 
 def _line_cost_expr():
     return (
         func.coalesce(TransactionSub.CurrentCost, 0) *
         func.coalesce(TransactionSub.Qty, 0)
     )
+
 
 def get_sales_summary(
     db: Session,
@@ -30,11 +35,11 @@ def get_sales_summary(
             TransactionMain.Billing_Name.label("billing_name"),
             TransactionMain.CreatedUser.label("created_user"),
             TransactionMain.Terminal_ID.label("terminal_id"),
-            func.coalesce(TransactionMain.Net_Total, 0).label("net_total"),
-            func.coalesce(TransactionMain.DiscountAmt, 0).label("discount_amt"),
-            func.coalesce(TransactionMain.CashAmt, 0).label("cash_amt"),
-            func.coalesce(TransactionMain.ChqAmt, 0).label("chq_amt"),
-            func.coalesce(TransactionMain.CreditAmt, 0).label("credit_amt"),
+            TransactionMain.Net_Total.label("net_total"),
+            TransactionMain.DiscountAmt.label("discount_amt"),
+            TransactionMain.CashAmt.label("cash_amt"),
+            TransactionMain.ChqAmt.label("chq_amt"),
+            TransactionMain.CreditAmt.label("credit_amt"),
             TransactionMain.Cancel_Status.label("cancel_status"),
         )
         .filter(TransactionMain.TransDate >= date_from)
@@ -54,6 +59,7 @@ def get_sales_summary(
         TransactionMain.TransDate.desc(),
         TransactionMain.TransNo.desc()
     ).all()
+
 
 def get_item_summary(
     db: Session,
@@ -95,6 +101,7 @@ def get_item_summary(
 
     return query.order_by(func.sum(amount_expr).desc()).all()
 
+
 def get_quantity_report(
     db: Session,
     date_from,
@@ -114,12 +121,12 @@ def get_quantity_report(
             TransactionMain.CreatedUser.label("created_user"),
             TransactionSub.ItemCode.label("item_code"),
             TransactionSub.Item_Name.label("item_name"),
-            func.coalesce(TransactionSub.Qty, 0).label("qty"),
-            func.coalesce(TransactionSub.Free_Qty, 0).label("free_qty"),
-            func.coalesce(TransactionSub.Rate, 0).label("rate"),
+            TransactionSub.Qty.label("qty"),
+            TransactionSub.Free_Qty.label("free_qty"),
+            TransactionSub.Rate.label("rate"),
             amount_expr.label("amount"),
-            func.coalesce(TransactionSub.CurrentCost, 0).label("current_cost"),
-            func.coalesce(TransactionSub.Discount_Amt, 0).label("discount_amt"),
+            TransactionSub.CurrentCost.label("current_cost"),
+            TransactionSub.Discount_Amt.label("discount_amt"),
         )
         .join(TransactionMain, TransactionMain.TransNo == TransactionSub.Trans_No)
         .filter(TransactionMain.TransDate >= date_from)
@@ -143,6 +150,7 @@ def get_quantity_report(
         TransactionMain.TransNo.desc()
     ).all()
 
+
 def get_bill_report(
     db: Session,
     date_from,
@@ -160,11 +168,11 @@ def get_bill_report(
             TransactionMain.Billing_Name.label("billing_name"),
             TransactionMain.CreatedUser.label("created_user"),
             TransactionMain.Terminal_ID.label("terminal_id"),
-            func.coalesce(TransactionMain.Net_Total, 0).label("net_total"),
-            func.coalesce(TransactionMain.DiscountAmt, 0).label("discount_amt"),
-            func.coalesce(TransactionMain.CashAmt, 0).label("cash_amt"),
-            func.coalesce(TransactionMain.ChqAmt, 0).label("chq_amt"),
-            func.coalesce(TransactionMain.CreditAmt, 0).label("credit_amt"),
+            TransactionMain.Net_Total.label("net_total"),
+            TransactionMain.DiscountAmt.label("discount_amt"),
+            TransactionMain.CashAmt.label("cash_amt"),
+            TransactionMain.ChqAmt.label("chq_amt"),
+            TransactionMain.CreditAmt.label("credit_amt"),
             TransactionMain.Cancel_Status.label("cancel_status"),
             TransactionMain.Comments.label("comments"),
         )
@@ -188,6 +196,7 @@ def get_bill_report(
         TransactionMain.TransDate.desc(),
         TransactionMain.TransNo.desc()
     ).all()
+
 
 def get_gp_report(
     db: Session,
@@ -231,17 +240,22 @@ def get_gp_report(
 
     return query.order_by(func.sum(gp_expr).desc()).all()
 
+
+
 def stock_units_expr():
     return func.coalesce(TmpSummaryStockBalanceCalcWithValue.NetBal, 0)
 
+
 def stock_rate_expr():
     return func.coalesce(StockItems.Current_Cost, 0)
+
 
 def stock_value_expr():
     return (
         func.coalesce(TmpSummaryStockBalanceCalcWithValue.NetBal, 0) *
         func.coalesce(StockItems.Current_Cost, 0)
     )
+
 
 def get_stock_report(
     db: Session,
@@ -274,8 +288,13 @@ def get_stock_report(
 
     return query.order_by(StockItems.Item_Code.asc()).all()
 
+
+
+
 def expenses_amount_expr():
+    # Use Debit amount when available, otherwise Credit amount
     return func.coalesce(JournalSub.DebitAmt, JournalSub.CreditAmt, 0)
+
 
 def get_expenses_report(
     db: Session,
