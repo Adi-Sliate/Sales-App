@@ -3,14 +3,14 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import crud
-import logging
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
 
+
 def to_float(value):
     return float(value) if value is not None else 0.0
+
+
 
 @router.get("/sales-summary")
 def sales_summary(
@@ -23,8 +23,6 @@ def sales_summary(
 ):
     start_date = datetime.combine(date_from, time.min)
     end_date = datetime.combine(date_to, time.max)
-    
-    logger.info(f"🔍 Sales Summary - date_from: {start_date}, date_to: {end_date}, trans_type: {trans_type}")
 
     rows = crud.get_sales_summary(
         db=db,
@@ -34,8 +32,6 @@ def sales_summary(
         created_user=created_user,
         terminal_id=terminal_id,
     )
-    
-    logger.info(f"📊 rows returned: {len(rows)}")
 
     total_net = sum(to_float(row.net_total) for row in rows)
     total_discount = sum(to_float(row.discount_amt) for row in rows)
@@ -323,6 +319,7 @@ def stock_report(
     }
 
 
+
 @router.get("/expenses-report")
 def expenses_report(
     date_from: date = Query(...),
@@ -365,82 +362,4 @@ def expenses_report(
         "count": len(data),
         "total_amount": total_amount,
         "data": data,
-    }
-
-
-# ============================================
-# DEBUG ENDPOINT - Remove after fixing
-# ============================================
-@router.get("/debug-sales")
-def debug_sales(
-    date_from: date = Query(...),
-    date_to: date = Query(...),
-    trans_type: str | None = None,
-    db: Session = Depends(get_db),
-):
-    from sqlalchemy import text
-    
-    start_date = datetime.combine(date_from, time.min)
-    end_date = datetime.combine(date_to, time.max)
-    
-    # Direct SQL query to check what's happening
-    sql = text("""
-        SELECT 
-            COUNT(*) as total_count,
-            SUM("Net_Total") as total_net,
-            SUM("DiscountAmt") as total_discount
-        FROM "TransactionMain"
-        WHERE "TransDate" BETWEEN :start_date AND :end_date
-        AND "TransType" = :trans_type
-    """)
-    
-    result = db.execute(sql, {
-        "start_date": start_date,
-        "end_date": end_date,
-        "trans_type": trans_type
-    })
-    
-    row = result.fetchone()
-    
-    # Also get sample data
-    sample_sql = text("""
-        SELECT 
-            "TransNo",
-            "TransDate",
-            "TransType",
-            "Net_Total",
-            "DiscountAmt"
-        FROM "TransactionMain"
-        WHERE "TransDate" BETWEEN :start_date AND :end_date
-        AND "TransType" = :trans_type
-        LIMIT 5
-    """)
-    
-    sample_result = db.execute(sample_sql, {
-        "start_date": start_date,
-        "end_date": end_date,
-        "trans_type": trans_type
-    })
-    
-    samples = sample_result.fetchall()
-    
-    return {
-        "debug_info": {
-            "start_date": str(start_date),
-            "end_date": str(end_date),
-            "trans_type": trans_type
-        },
-        "count": row[0] if row else 0,
-        "total_net": float(row[1]) if row and row[1] else 0,
-        "total_discount": float(row[2]) if row and row[2] else 0,
-        "samples": [
-            {
-                "TransNo": s[0],
-                "TransDate": str(s[1]),
-                "TransType": s[2],
-                "Net_Total": float(s[3]) if s[3] else 0,
-                "DiscountAmt": float(s[4]) if s[4] else 0
-            }
-            for s in samples
-        ]
     }
