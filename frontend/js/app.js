@@ -1,66 +1,8 @@
-// ============================================
-// API Configuration - PRODUCTION
-// ============================================
-
-// ✅ CORRECT: Use your deployed backend URL
-const API_BASE = "https://salesapp-od4qsbwe.b4a.run/api/reports";
-
+const API_BASE = "https://salesapp-exl13cep.b4a.run/api/reports";
 let currentData = [];
 let currentPage = 1;
 let pageSize = 25;
 let currentReportType = "";
-
-// ================= DATE RANGE FUNCTIONS =================
-const DATE_RANGES = {
-    alldata: { from: '2026-02-09', to: '2026-05-07', label: 'All Data' },
-    today: { 
-        get from() { return new Date().toISOString().split('T')[0]; }, 
-        get to() { return new Date().toISOString().split('T')[0]; }, 
-        label: 'Today' 
-    },
-    week: { 
-        get from() { const d = new Date(); d.setDate(d.getDate() - 7); return d.toISOString().split('T')[0]; }, 
-        get to() { return new Date().toISOString().split('T')[0]; }, 
-        label: 'Last 7 Days' 
-    },
-    month: { 
-        get from() { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().split('T')[0]; }, 
-        get to() { return new Date().toISOString().split('T')[0]; }, 
-        label: 'Last 30 Days' 
-    },
-    quarter: { 
-        get from() { const d = new Date(); d.setMonth(d.getMonth() - 3); return d.toISOString().split('T')[0]; }, 
-        get to() { return new Date().toISOString().split('T')[0]; }, 
-        label: 'Last 3 Months' 
-    },
-    year: { 
-        get from() { const d = new Date(); d.setFullYear(d.getFullYear() - 1); return d.toISOString().split('T')[0]; }, 
-        get to() { return new Date().toISOString().split('T')[0]; }, 
-        label: 'Last Year' 
-    }
-};
-
-function getDateRange(preset = 'alldata') {
-    const range = DATE_RANGES[preset] || DATE_RANGES.alldata;
-    return {
-        from: typeof range.from === 'function' ? range.from() : range.from,
-        to: typeof range.to === 'function' ? range.to() : range.to
-    };
-}
-
-function applyDatePreset() {
-    const preset = document.getElementById('datePreset');
-    if (!preset) return;
-    
-    const range = getDateRange(preset.value);
-    const dateFrom = document.getElementById('dateFrom');
-    const dateTo = document.getElementById('dateTo');
-    
-    if (dateFrom) dateFrom.value = range.from;
-    if (dateTo) dateTo.value = range.to;
-    
-    console.log(`📅 Date range updated: ${range.from} to ${range.to}`);
-}
 
 // ================= FORMATTERS =================
 function formatMoney(value) {
@@ -87,26 +29,9 @@ function formatUnits(value) {
 
 // ================= FILTERS =================
 function getFilters() {
-    const dateFromEl = document.getElementById("dateFrom");
-    const dateToEl = document.getElementById("dateTo");
-    
-    // If date inputs exist and have values, use them
-    // Otherwise use default preset
-    let from = dateFromEl?.value || '';
-    let to = dateToEl?.value || '';
-    
-    // If no dates are set, use the default range
-    if (!from || !to) {
-        const defaultRange = getDateRange('alldata');
-        from = defaultRange.from;
-        to = defaultRange.to;
-        if (dateFromEl) dateFromEl.value = from;
-        if (dateToEl) dateToEl.value = to;
-    }
-    
     return {
-        date_from: from,
-        date_to: to,
+        date_from: document.getElementById("dateFrom")?.value || "",
+        date_to: document.getElementById("dateTo")?.value || "",
         trans_type: document.getElementById("transType")?.value.trim() || "",
         created_user: document.getElementById("createdUser")?.value.trim() || "",
         terminal_id: document.getElementById("terminalId")?.value.trim() || "",
@@ -550,8 +475,6 @@ async function loadSalesSummary() {
             terminal_id: filters.terminal_id
         });
 
-        console.log(`📡 Fetching sales summary: ${API_BASE}/sales-summary?${query}`);
-
         const response = await fetch(`${API_BASE}/sales-summary?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
@@ -593,8 +516,6 @@ async function loadItemSummary() {
             trans_type: filters.trans_type,
             created_user: filters.created_user
         });
-
-        console.log(`📡 Fetching item summary: ${API_BASE}/item-summary?${query}`);
 
         const response = await fetch(`${API_BASE}/item-summary?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -638,8 +559,6 @@ async function loadQuantityReport() {
             created_user: filters.created_user
         });
 
-        console.log(`📡 Fetching quantity report: ${API_BASE}/quantity-report?${query}`);
-
         const response = await fetch(`${API_BASE}/quantity-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
@@ -681,8 +600,6 @@ async function loadBillReport() {
             terminal_id: filters.terminal_id,
             bill_no: filters.bill_no
         });
-
-        console.log(`📡 Fetching bill report: ${API_BASE}/bill-report?${query}`);
 
         const response = await fetch(`${API_BASE}/bill-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -726,8 +643,6 @@ async function loadGpReport() {
             created_user: filters.created_user
         });
 
-        console.log(`📡 Fetching GP report: ${API_BASE}/gp-report?${query}`);
-
         const response = await fetch(`${API_BASE}/gp-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
@@ -760,8 +675,6 @@ async function loadStockReport() {
             item_code: filters.item_code,
             item_name: filters.item_name
         });
-
-        console.log(`📡 Fetching stock report: ${API_BASE}/stock-report?${query}`);
 
         const response = await fetch(`${API_BASE}/stock-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -804,8 +717,6 @@ async function loadExpensesReport() {
             user: filters.created_user,
             comments: filters.comments
         });
-
-        console.log(`📡 Fetching expenses report: ${API_BASE}/expenses-report?${query}`);
 
         const response = await fetch(`${API_BASE}/expenses-report?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -874,33 +785,291 @@ if (pageSizeEl) {
     });
 }
 
-// ================= INITIALIZATION =================
-document.addEventListener('DOMContentLoaded', function() {
-    // Set default date range
-    const defaultRange = getDateRange('alldata');
-    const dateFrom = document.getElementById('dateFrom');
-    const dateTo = document.getElementById('dateTo');
-    
-    if (dateFrom) dateFrom.value = defaultRange.from;
-    if (dateTo) dateTo.value = defaultRange.to;
-    
-    // If date preset dropdown exists, set it
-    const preset = document.getElementById('datePreset');
-    if (preset) {
-        preset.value = 'alldata';
-        preset.addEventListener('change', applyDatePreset);
-    }
-    
-    console.log(`📅 Default date range set: ${defaultRange.from} to ${defaultRange.to}`);
-    console.log(`🔗 API Base URL: ${API_BASE}`);
-});
-
-// ================= PRINT SECTION ===========
+//  =================== PRINT SECTION ===========
 function formatPrintDate(dateValue) {
     if (!dateValue) return "";
     const d = new Date(dateValue);
     if (isNaN(d.getTime())) return dateValue;
     return d.toLocaleDateString();
+}
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function getReportDisplayName() {
+    switch (currentReportType) {
+        case "sales": return "SALES SUMMARY REPORT";
+        case "item": return "ITEM SUMMARY REPORT";
+        case "quantity": return "QUANTITY REPORT";
+        case "bill": return "BILL REPORT";
+        case "gp": return "GP REPORT";
+        case "stock": return "STOCK REPORT";
+        case "expenses": return "EXPENSES REPORT";
+        default: return "REPORT";
+    }
+}
+
+function getPrintFiltersText() {
+    const filters = getFilters();
+    const parts = [];
+
+    if (filters.trans_type) parts.push(`Trans Type: ${filters.trans_type}`);
+    if (filters.created_user) parts.push(`User: ${filters.created_user}`);
+    if (filters.terminal_id) parts.push(`Terminal: ${filters.terminal_id}`);
+    if (filters.item_code) parts.push(`Item Code: ${filters.item_code}`);
+    if (filters.item_name) parts.push(`Item Name: ${filters.item_name}`);
+    if (filters.bill_no) parts.push(`Bill No: ${filters.bill_no}`);
+
+    return parts.join(" | ");
+}
+
+function buildPrintTable(rows) {
+    const printHead = document.getElementById("printHead");
+    const printBody = document.getElementById("printBody");
+    const printFoot = document.getElementById("printFoot");
+
+    if (!printHead || !printBody || !printFoot) return;
+
+    printHead.innerHTML = "";
+    printBody.innerHTML = "";
+    printFoot.innerHTML = "";
+
+    if (!rows || rows.length === 0) {
+        printHead.innerHTML = `<tr><th>Message</th></tr>`;
+        printBody.innerHTML = `<tr><td>No data found.</td></tr>`;
+        return;
+    }
+
+    if (currentReportType === "sales") {
+        printHead.innerHTML = `
+            <tr>
+                <th>Trans No</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Customer</th>
+                <th>User</th>
+                <th>Terminal</th>
+                <th class="text-end">Net Total</th>
+                <th class="text-end">Discount</th>
+                <th class="text-end">Cash</th>
+                <th class="text-end">Cheque</th>
+                <th class="text-end">Credit</th>
+                <th>Cancel</th>
+            </tr>
+        `;
+
+        printBody.innerHTML = rows.map(row => `
+            <tr>
+                <td>${escapeHtml(row.trans_no ?? "")}</td>
+                <td>${escapeHtml(row.trans_date ? new Date(row.trans_date).toLocaleString() : "")}</td>
+                <td>${escapeHtml(row.trans_type ?? "")}</td>
+                <td>${escapeHtml(row.billing_name ?? "")}</td>
+                <td>${escapeHtml(row.created_user ?? "")}</td>
+                <td>${escapeHtml(row.terminal_id ?? "")}</td>
+                <td class="text-end">${formatMoney(row.net_total)}</td>
+                <td class="text-end">${formatMoney(row.discount_amt)}</td>
+                <td class="text-end">${formatMoney(row.cash_amt)}</td>
+                <td class="text-end">${formatMoney(row.chq_amt)}</td>
+                <td class="text-end">${formatMoney(row.credit_amt)}</td>
+                <td>${escapeHtml(row.cancel_status ?? "")}</td>
+            </tr>
+        `).join("");
+    }
+
+    else if (currentReportType === "item") {
+        printHead.innerHTML = `
+            <tr>
+                <th>Item Code</th>
+                <th>Item Name</th>
+                <th class="text-end">Total Qty</th>
+                <th class="text-end">Free Qty</th>
+                <th class="text-end">Total Discount</th>
+                <th class="text-end">Total Amount</th>
+            </tr>
+        `;
+
+        printBody.innerHTML = rows.map(row => `
+            <tr>
+                <td>${escapeHtml(row.item_code ?? "")}</td>
+                <td>${escapeHtml(row.item_name ?? "")}</td>
+                <td class="text-end">${formatQty(row.total_qty)}</td>
+                <td class="text-end">${formatQty(row.total_free_qty)}</td>
+                <td class="text-end">${formatMoney(row.total_discount)}</td>
+                <td class="text-end">${formatMoney(row.total_amount)}</td>
+            </tr>
+        `).join("");
+    }
+
+    else if (currentReportType === "quantity") {
+        printHead.innerHTML = `
+            <tr>
+                <th>Trans No</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>User</th>
+                <th>Item Code</th>
+                <th>Item Name</th>
+                <th class="text-end">Qty</th>
+                <th class="text-end">Free Qty</th>
+                <th class="text-end">Rate</th>
+                <th class="text-end">Amount</th>
+                <th class="text-end">Discount</th>
+            </tr>
+        `;
+
+        printBody.innerHTML = rows.map(row => `
+            <tr>
+                <td>${escapeHtml(row.trans_no ?? "")}</td>
+                <td>${escapeHtml(row.trans_date ? new Date(row.trans_date).toLocaleString() : "")}</td>
+                <td>${escapeHtml(row.trans_type ?? "")}</td>
+                <td>${escapeHtml(row.created_user ?? "")}</td>
+                <td>${escapeHtml(row.item_code ?? "")}</td>
+                <td>${escapeHtml(row.item_name ?? "")}</td>
+                <td class="text-end">${formatQty(row.qty)}</td>
+                <td class="text-end">${formatQty(row.free_qty)}</td>
+                <td class="text-end">${formatMoney(row.rate)}</td>
+                <td class="text-end">${formatMoney(row.amount)}</td>
+                <td class="text-end">${formatMoney(row.discount_amt)}</td>
+            </tr>
+        `).join("");
+    }
+
+    else if (currentReportType === "bill") {
+        printHead.innerHTML = `
+            <tr>
+                <th>Bill No</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Customer</th>
+                <th>User</th>
+                <th>Terminal</th>
+                <th class="text-end">Net Total</th>
+                <th class="text-end">Discount</th>
+                <th class="text-end">Cash</th>
+                <th class="text-end">Cheque</th>
+                <th class="text-end">Credit</th>
+                <th>Cancel</th>
+                <th>Comments</th>
+            </tr>
+        `;
+
+        printBody.innerHTML = rows.map(row => `
+            <tr>
+                <td>${escapeHtml(row.trans_no ?? "")}</td>
+                <td>${escapeHtml(row.trans_date ? new Date(row.trans_date).toLocaleString() : "")}</td>
+                <td>${escapeHtml(row.trans_type ?? "")}</td>
+                <td>${escapeHtml(row.billing_name ?? "")}</td>
+                <td>${escapeHtml(row.created_user ?? "")}</td>
+                <td>${escapeHtml(row.terminal_id ?? "")}</td>
+                <td class="text-end">${formatMoney(row.net_total)}</td>
+                <td class="text-end">${formatMoney(row.discount_amt)}</td>
+                <td class="text-end">${formatMoney(row.cash_amt)}</td>
+                <td class="text-end">${formatMoney(row.chq_amt)}</td>
+                <td class="text-end">${formatMoney(row.credit_amt)}</td>
+                <td>${escapeHtml(row.cancel_status ?? "")}</td>
+                <td>${escapeHtml(row.comments ?? "")}</td>
+            </tr>
+        `).join("");
+    }
+
+    else if (currentReportType === "gp") {
+        printHead.innerHTML = `
+            <tr>
+                <th>Item Code</th>
+                <th>Item Name</th>
+                <th class="text-end">Total Qty</th>
+                <th class="text-end">Total Amount</th>
+                <th class="text-end">Total Cost</th>
+                <th class="text-end">Gross Profit</th>
+                <th class="text-end">GP %</th>
+            </tr>
+        `;
+
+        printBody.innerHTML = rows.map(row => `
+            <tr>
+                <td>${escapeHtml(row.item_code ?? "")}</td>
+                <td>${escapeHtml(row.item_name ?? "")}</td>
+                <td class="text-end">${formatQty(row.total_qty)}</td>
+                <td class="text-end">${formatMoney(row.total_amount)}</td>
+                <td class="text-end">${formatMoney(row.total_cost)}</td>
+                <td class="text-end">${formatMoney(row.gross_profit)}</td>
+                <td class="text-end">${Number(row.gp_percent || 0).toFixed(2)}%</td>
+            </tr>
+        `).join("");
+    }
+
+    else if (currentReportType === "stock") {
+        printHead.innerHTML = `
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th class="text-end">Units</th>
+                <th class="text-end">Rate</th>
+                <th class="text-end">Value</th>
+            </tr>
+        `;
+
+        printBody.innerHTML = rows.map(row => `
+            <tr>
+                <td>${escapeHtml(row.item_code ?? "")}</td>
+                <td>${escapeHtml(row.item_name ?? "")}</td>
+                <td class="text-end">${formatUnits(row.units)}</td>
+                <td class="text-end">${formatMoney(row.rate)}</td>
+                <td class="text-end">${formatMoney(row.value)}</td>
+            </tr>
+        `).join("");
+    }
+
+    else if (currentReportType === "expenses") {
+        printHead.innerHTML = `
+            <tr>
+                <th>Account Name</th>
+                <th>Details</th>
+                <th>User</th>
+                <th>Comments</th>
+                <th class="text-end">Amount</th>
+            </tr>
+        `;
+
+        printBody.innerHTML = rows.map(row => `
+            <tr>
+                <td>${escapeHtml(row.name ?? "")}</td>
+                <td>${escapeHtml(row.details ?? "")}</td>
+                <td>${escapeHtml(row.user ?? "")}</td>
+                <td>${escapeHtml(row.comments ?? "")}</td>
+                <td class="text-end">${formatMoney(row.amount)}</td>
+            </tr>
+        `).join("");
+    }
+}
+
+function buildPrintSummary() {
+    const summaryEl = document.getElementById("printSummary");
+    const count = document.getElementById("cardCount")?.textContent || "0";
+    const amountLabel = document.getElementById("cardAmountLabel")?.textContent || "Total Amount";
+    const amount = document.getElementById("cardAmount")?.textContent || "0.00";
+    const extraLabel = document.getElementById("cardExtraLabel")?.textContent || "Extra Total";
+    const extra = document.getElementById("cardExtra")?.textContent || "0.00";
+
+    if (!summaryEl) return;
+
+    summaryEl.innerHTML = `
+        <div>Record Count: ${escapeHtml(count)}</div>
+        <div>${escapeHtml(amountLabel)}: ${escapeHtml(amount)}</div>
+        <div>${escapeHtml(extraLabel)}: ${escapeHtml(extra)}</div>
+    `;
+}
+
+function formatPrintDateTime(value) {
+    const d = value ? new Date(value) : new Date();
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleString();
 }
 
 function escapeHtml(value) {
@@ -1204,12 +1373,6 @@ function buildPrintSummaryHTML() {
         <div class="summary-line"><strong>${escapeHtml(amountLabel)}:</strong> ${escapeHtml(amount)}</div>
         <div class="summary-line"><strong>${escapeHtml(extraLabel)}:</strong> ${escapeHtml(extra)}</div>
     `;
-}
-
-function formatPrintDateTime(value) {
-    const d = value ? new Date(value) : new Date();
-    if (isNaN(d.getTime())) return "";
-    return d.toLocaleString();
 }
 
 function printCurrentReport() {
