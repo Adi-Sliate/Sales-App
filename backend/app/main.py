@@ -33,8 +33,7 @@ async def startup_event():
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://salesapp-jmi6j3qu.b4a.run",  # ✅ Your current frontend URL
-        "https://salesapp-hkmhv8sr.b4a.run",  # Old URL (keep for safety)
+        "https://salesapp-e1q0ga5o.b4a.run",  # ✅ Your current frontend URL
         "http://localhost:3000",
         "http://localhost:8000",
         "http://localhost:8080",
