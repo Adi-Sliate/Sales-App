@@ -1,39 +1,49 @@
 # backend/app/main.py
-from fastapi import FastAPI, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
-from sqlalchemy.orm import Session
+
 from pathlib import Path
 import logging
 
-# Import your modules
-from .routers import reports
-from .database import engine, Base, get_db
-from .models import TransactionMain
+from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
 
+from .database import engine, Base, get_db
+from .routers import reports
+
+# ----------------------------------------------------
+# Logging
+# ----------------------------------------------------
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Sales Report API", version="1.0.0")
+# ----------------------------------------------------
+# FastAPI App
+# ----------------------------------------------------
+app = FastAPI(
+    title="Sales Report API",
+    version="1.0.0"
+)
 
-# Create tables on startup
+# ----------------------------------------------------
+# Startup
+# ----------------------------------------------------
 @app.on_event("startup")
 async def startup_event():
     try:
-        logger.info("Creating database tables...")
         Base.metadata.create_all(bind=engine)
-        logger.info("Database tables created successfully!")
+        logger.info("Database initialized successfully.")
     except Exception as e:
-        logger.error(f"Database initialization error: {e}")
+        logger.exception(f"Database initialization failed: {e}")
 
-# ============================================
-# CORS - Updated with ALL frontend URLs
-# ============================================
+# ----------------------------------------------------
+# CORS
+# ----------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://salesapp-pbvpjto9.b4a.run",  # ✅ Your NEW frontend URL (current)
+        "https://salesapp-pbvpjto9.b4a.run",
         "http://localhost:3000",
         "http://localhost:8000",
         "http://localhost:8080",
@@ -44,105 +54,123 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-# Option A: Keep the prefix /api but add /reports to the path
-# The full path will be: /api/reports/sales-summary
+# ----------------------------------------------------
+# Routers
+# ----------------------------------------------------
+# If reports.py has:
+# router = APIRouter(tags=["Reports"])
+#
+# All routes become:
+# /api/sales-summary
+# /api/item-summary
+# /api/quantity-report
+# etc.
+
 app.include_router(reports.router, prefix="/api")
 
-# Option B: Add a second router without the /reports prefix
-# This makes both /api/sales-summary AND /api/reports/sales-summary work
-# Import the same router but without the /reports prefix
-from .routers.reports import router as reports_router_no_prefix
-# Create a copy of the router without the prefix
-# We'll just include it with a different prefix
-app.include_router(reports.router, prefix="/api")  # This gives /api/reports/...
-
-# Option C: If you want the routes directly at /api/ without /reports
-# You need to modify the reports.py file (see below)
-
-# Serve frontend
+# ----------------------------------------------------
+# Static Files
+# ----------------------------------------------------
 frontend_path = Path(__file__).parent.parent.parent / "frontend"
+
 if frontend_path.exists():
-    # Mount CSS and JS directories
+
     css_path = frontend_path / "css"
     if css_path.exists():
-        app.mount("/css", StaticFiles(directory=str(css_path)), name="css")
-        logger.info(f"Serving CSS from: {css_path}")
+        app.mount("/css", StaticFiles(directory=css_path), name="css")
 
     js_path = frontend_path / "js"
     if js_path.exists():
-        app.mount("/js", StaticFiles(directory=str(js_path)), name="js")
-        logger.info(f"Serving JS from: {js_path}")
+        app.mount("/js", StaticFiles(directory=js_path), name="js")
 
-@app.get("/")
+# ----------------------------------------------------
+# Frontend
+# ----------------------------------------------------
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    """Root endpoint - serves the frontend if available"""
-    index_path = frontend_path / "index.html"
-    if index_path.exists():
-        with open(index_path, "r", encoding="utf-8") as f:
-            content = f.read()
-        return HTMLResponse(content=content)
-    return {"message": "Sales Summary Report API is running"}
 
+    index_path = frontend_path / "index.html"
+
+    if index_path.exists():
+        return HTMLResponse(index_path.read_text(encoding="utf-8"))
+
+    return HTMLResponse("<h2>Sales Report API is running.</h2>")
+
+# ----------------------------------------------------
+# Health Check
+# ----------------------------------------------------
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint"""
     return {
         "status": "healthy",
         "service": "Sales Report API",
-        "version": "1.0.0",
-        "database": "Neon PostgreSQL"
+        "version": app.version,
+        "database": "Neon PostgreSQL",
     }
 
+# ----------------------------------------------------
+# Database Test
+# ----------------------------------------------------
 @app.get("/api/test-db")
 async def test_db(db: Session = Depends(get_db)):
-    """Test database connection"""
+
+    from sqlalchemy import text
+
     try:
-        from sqlalchemy import text
-        result = db.execute(text("SELECT COUNT(*) FROM \"TransactionMain\""))
-        count = result.fetchone()[0]
+        result = db.execute(text('SELECT COUNT(*) FROM "TransactionMain"'))
+        count = result.scalar()
+
         return {
             "status": "connected",
-            "message": "Database connection successful",
-            "table_count": count,
-            "has_data": count > 0
+            "records": count,
+            "has_data": count > 0,
         }
+
     except Exception as e:
-        logger.error(f"Database test error: {e}")
+        logger.exception(e)
+
         return {
             "status": "error",
-            "message": str(e)
+            "message": str(e),
         }
 
+# ----------------------------------------------------
+# Route List
+# ----------------------------------------------------
 @app.get("/api/routes")
 async def list_routes():
-    """List all available routes for debugging"""
-    routes = []
-    for route in app.routes:
-        if hasattr(route, 'path') and hasattr(route, 'methods'):
-            routes.append({
-                "path": route.path,
-                "methods": list(route.methods) if route.methods else []
-            })
+
     return {
-        "total_routes": len(routes),
-        "routes": routes
+        "total_routes": len(app.routes),
+        "routes": [
+            {
+                "path": route.path,
+                "methods": list(route.methods)
+            }
+            for route in app.routes
+            if hasattr(route, "path")
+        ]
     }
 
+# ----------------------------------------------------
+# API Info
+# ----------------------------------------------------
 @app.get("/api")
 async def api_root():
-    """API root endpoint - displays all available endpoints"""
+
     return {
-        "message": "Sales Summary Report API",
-        "version": "1.0.0",
+        "name": app.title,
+        "version": app.version,
         "database": "Neon PostgreSQL",
-        "frontend_urls": [
-            "https://salesapp-o1rbn7lh.b4a.run",
-            "https://salesapp-e1q0ga5o.b4a.run"
-        ],
-        "endpoint_prefixes": {
-            "with_reports": "/api/reports/sales-summary",
-            "without_reports": "/api/sales-summary (currently not available)"
-        },
-        "note": "Visit /api/routes to see all available endpoints"
+        "documentation": "/docs",
+        "available_reports": [
+            "/api/sales-summary",
+            "/api/item-summary",
+            "/api/quantity-report",
+            "/api/bill-report",
+            "/api/gp-report",
+            "/api/stock-report",
+            "/api/expenses-report",
+            "/api/debug-sql",
+        ]
     }
