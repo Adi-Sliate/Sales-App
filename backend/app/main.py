@@ -27,10 +27,19 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Database initialization error: {e}")
 
-# CORS
+# ============================================
+# CORS - Updated for your current URL
+# ============================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://salesapp-jmi6j3qu.b4a.run",  # ✅ Your current frontend URL
+        "https://salesapp-hkmhv8sr.b4a.run",  # Old URL (keep for safety)
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "http://localhost:8080",
+        "http://127.0.0.1:8000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -64,19 +73,26 @@ async def root():
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "service": "Sales Report API", "version": "1.0.0"}
+    return {
+        "status": "healthy",
+        "service": "Sales Report API",
+        "version": "1.0.0",
+        "database": "Neon PostgreSQL"
+    }
 
 @app.get("/api/test-db")
 async def test_db(db: Session = Depends(get_db)):
     """Test database connection"""
     try:
+        from sqlalchemy import text
         # Try to query one record
-        result = db.query(TransactionMain).first()
+        result = db.execute(text("SELECT COUNT(*) FROM \"TransactionMain\""))
+        count = result.fetchone()[0]
         return {
             "status": "connected",
             "message": "Database connection successful",
-            "sample_data": result is not None,
-            "has_data": result is not None
+            "table_count": count,
+            "has_data": count > 0
         }
     except Exception as e:
         logger.error(f"Database test error: {e}")
@@ -91,12 +107,17 @@ async def api_root():
     return {
         "message": "Sales Report API",
         "version": "1.0.0",
+        "database": "Neon PostgreSQL",
         "endpoints": [
+            "/",
             "/api/health",
             "/api/test-db",
-            "/api/reports/sales",
-            "/api/reports/sales/summary",
-            "/api/reports/items",
-            "/api/reports/stock/value"
+            "/api/reports/sales-summary",
+            "/api/reports/item-summary",
+            "/api/reports/quantity-report",
+            "/api/reports/bill-report",
+            "/api/reports/gp-report",
+            "/api/reports/stock-report",
+            "/api/reports/expenses-report"
         ]
     }
