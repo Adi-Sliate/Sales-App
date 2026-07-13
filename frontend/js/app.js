@@ -2,8 +2,8 @@
 // API Configuration - Production
 // ============================================
 
-// ✅ CORRECT: API_BASE without /reports
-const API_BASE = "https://salesapp-jmi6j3qu.b4a.run/api";   
+// ✅ CORRECT: Use your current backend URL
+const API_BASE = "https://salesapp-jmi6j3qu.b4a.run/api";
 
 let currentData = [];
 let currentPage = 1;
@@ -35,9 +35,16 @@ function formatUnits(value) {
 
 // ================= FILTERS =================
 function getFilters() {
+    const dateFromEl = document.getElementById("dateFrom");
+    const dateToEl = document.getElementById("dateTo");
+    
+    // ✅ Default dates that have data
+    const defaultDateFrom = "2026-05-07";
+    const defaultDateTo = "2026-05-07";
+    
     return {
-        date_from: document.getElementById("dateFrom")?.value || "",
-        date_to: document.getElementById("dateTo")?.value || "",
+        date_from: dateFromEl?.value || defaultDateFrom,
+        date_to: dateToEl?.value || defaultDateTo,
         trans_type: document.getElementById("transType")?.value.trim().toUpperCase() || "",
         created_user: document.getElementById("createdUser")?.value.trim() || "",
         terminal_id: document.getElementById("terminalId")?.value.trim() || "",
@@ -473,6 +480,8 @@ async function loadSalesSummary() {
             return;
         }
 
+        console.log("📡 Sending request with:", filters);
+
         const query = buildQuery({
             date_from: filters.date_from,
             date_to: filters.date_to,
@@ -481,11 +490,11 @@ async function loadSalesSummary() {
             terminal_id: filters.terminal_id
         });
 
-        // ✅ CORRECT: /reports/sales-summary
         const response = await fetch(`${API_BASE}/reports/sales-summary?${query}`);
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const result = await response.json();
+        console.log("📊 Response:", result);
 
         currentData = result.data || [];
         currentPage = 1;
@@ -505,6 +514,9 @@ async function loadSalesSummary() {
         alert("Failed to load sales summary.");
     }
 }
+
+// ... (rest of your loaders remain the same)
+// ================= LOADERS =================
 
 async function loadItemSummary() {
     try {
