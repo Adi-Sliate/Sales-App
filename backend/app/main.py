@@ -34,9 +34,6 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://salesapp-o1rbn7lh.b4a.run",  # ✅ Your NEW frontend URL (current)
-        "https://salesapp-e1q0ga5o.b4a.run",  # ✅ Your OLD frontend URL
-        "https://salesapp-jmi6j3qu.b4a.run",  # Old URL (keep for safety)
-        "https://salesapp-hkmhv8sr.b4a.run",  # Old URL (keep for safety)
         "http://localhost:3000",
         "http://localhost:8000",
         "http://localhost:8080",
