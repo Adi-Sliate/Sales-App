@@ -28,12 +28,15 @@ async def startup_event():
         logger.error(f"Database initialization error: {e}")
 
 # ============================================
-# CORS - Updated for your current URL
+# CORS - Updated with ALL frontend URLs
 # ============================================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://salesapp-o1rbn7lh.b4a.run",  
+        "https://salesapp-o1rbn7lh.b4a.run",  # ✅ Your NEW frontend URL (current)
+        "https://salesapp-e1q0ga5o.b4a.run",  # ✅ Your OLD frontend URL
+        "https://salesapp-jmi6j3qu.b4a.run",  # Old URL (keep for safety)
+        "https://salesapp-hkmhv8sr.b4a.run",  # Old URL (keep for safety)
         "http://localhost:3000",
         "http://localhost:8000",
         "http://localhost:8080",
@@ -44,8 +47,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers with /api prefix
+# Include routers
+# Option A: Keep the prefix /api but add /reports to the path
+# The full path will be: /api/reports/sales-summary
 app.include_router(reports.router, prefix="/api")
+
+# Option B: Add a second router without the /reports prefix
+# This makes both /api/sales-summary AND /api/reports/sales-summary work
+# Import the same router but without the /reports prefix
+from .routers.reports import router as reports_router_no_prefix
+# Create a copy of the router without the prefix
+# We'll just include it with a different prefix
+app.include_router(reports.router, prefix="/api")  # This gives /api/reports/...
+
+# Option C: If you want the routes directly at /api/ without /reports
+# You need to modify the reports.py file (see below)
 
 # Serve frontend
 frontend_path = Path(__file__).parent.parent.parent / "frontend"
@@ -86,7 +102,6 @@ async def test_db(db: Session = Depends(get_db)):
     """Test database connection"""
     try:
         from sqlalchemy import text
-        # Try to query record count
         result = db.execute(text("SELECT COUNT(*) FROM \"TransactionMain\""))
         count = result.fetchone()[0]
         return {
@@ -102,6 +117,21 @@ async def test_db(db: Session = Depends(get_db)):
             "message": str(e)
         }
 
+@app.get("/api/routes")
+async def list_routes():
+    """List all available routes for debugging"""
+    routes = []
+    for route in app.routes:
+        if hasattr(route, 'path') and hasattr(route, 'methods'):
+            routes.append({
+                "path": route.path,
+                "methods": list(route.methods) if route.methods else []
+            })
+    return {
+        "total_routes": len(routes),
+        "routes": routes
+    }
+
 @app.get("/api")
 async def api_root():
     """API root endpoint - displays all available endpoints"""
@@ -109,42 +139,13 @@ async def api_root():
         "message": "Sales Summary Report API",
         "version": "1.0.0",
         "database": "Neon PostgreSQL",
-        "endpoints": [
-            "/",
-            "/api/health",
-            "/api/test-db",
-            "/api/reports/sales",
-            "/api/reports/sales/summary",
-            "/api/reports/items",
-            "/api/reports/stock/value",
-            "/api/reports/sales-summary",
-            "/api/reports/item-summary",
-            "/api/reports/quantity-report",
-            "/api/reports/bill-report",
-            "/api/reports/gp-report",
-            "/api/reports/stock-report",
-            "/api/reports/expenses-report"
-        ]
-    }
-
-# Optional: Display function for debugging
-@app.get("/api/display")
-async def display_info():
-    """Display function to show API information"""
-    return {
-        "api_name": "Sales Summary Report API",
-        "version": "1.0.0",
-        "frontend_url": "https://salesapp-e1q0ga5o.b4a.run",
-        "status": "running",
-        "endpoints_count": 15,
-        "database": "Neon PostgreSQL",
-        "cors_origins": [
-            "https://salesapp-e1q0ga5o.b4a.run",
-            "https://salesapp-jmi6j3qu.b4a.run",
-            "https://salesapp-hkmhv8sr.b4a.run",
-            "http://localhost:3000",
-            "http://localhost:8000",
-            "http://localhost:8080",
-            "http://127.0.0.1:8000"
-        ]
+        "frontend_urls": [
+            "https://salesapp-o1rbn7lh.b4a.run",
+            "https://salesapp-e1q0ga5o.b4a.run"
+        ],
+        "endpoint_prefixes": {
+            "with_reports": "/api/reports/sales-summary",
+            "without_reports": "/api/sales-summary (currently not available)"
+        },
+        "note": "Visit /api/routes to see all available endpoints"
     }
