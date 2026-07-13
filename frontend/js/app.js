@@ -1,4 +1,4 @@
-const API_BASE = "https://salesapp-e1q0ga5o.b4a.run/api";
+const API_BASE = "https://salesapp-o1rbn7lh.b4a.run/api";
 let currentData = [];
 let currentPage = 1;
 let pageSize = 25;
