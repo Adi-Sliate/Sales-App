@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import crud
 
-router = APIRouter(prefix="/reports", tags=["Reports"])
+
+router = APIRouter(tags=["Reports"])
 
 
 def to_float(value):
