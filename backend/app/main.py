@@ -43,7 +43,7 @@ async def startup_event():
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://salesapp-fn7328f7.b4a.run", 
+        "https://salesapp-01q160vr.b4a.run", 
         "http://localhost:3000",
         "http://localhost:8000",
         "http://localhost:8080",
